@@ -8,25 +8,23 @@ Easy install and use.
 
 ## Instructions
 
-```
+```bash
 git clone https://github.com/emelcd/template_chrome_extension
 
 cd template_chrome_extension
 
 yarn // or npm install
-
-
 ```
 
 For development:
 
-```
+```bash
 yarn dev
 ```
 
 For build:
 
-```
+```bash
 yarn build
 ```
 
