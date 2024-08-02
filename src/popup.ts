@@ -14,7 +14,9 @@ interface Technology {
   features: string[]; // Key features or capabilities of the technology
   popularity: number; // Popularity score or ranking (could be a number or an enum)
   documentation: string; // URL to the official documentation
+  updatedAt: number; // Date when the technology information was last updated
 }
+
 
 @customElement("technology-card")
 export class TechnologyCard extends LitElement {
@@ -51,49 +53,55 @@ export class TechnologyCard extends LitElement {
   removeTechnology() {
     chrome.storage.sync.get("technologies", (data) => {
       const technologies: Technology[] = data.technologies || [];
-      const index = technologies.findIndex(
-        (tech) => tech.id === this.technology.id
+      const updatedTechnologies = technologies.filter(
+        (tech) => tech.id !== this.technology.id
       );
-      technologies.splice(index, 1);
-      chrome.storage.sync.set({ technologies });
+      chrome.storage.sync.set({ technologies: updatedTechnologies });
+      generateDOM(updatedTechnologies);
+
+      chrome.storage.sync.get("technologies", (data) => {
+        const technologies: Technology[] = data.technologies || [];
+        generateDOM(technologies);
+      });
     });
-      
-      this.remove 
-
-      generateDOM()
   }
-
-    
 
   render() {
     return html`
       <h2>${this.technology.name}</h2>
       <p>${this.technology.description}</p>
       <ul>
-        <li>
-          <strong>Category:</strong> ${this.technology.category}
-        </li>
-        <li>
-          <strong>Release Date:</strong> ${this.technology.releaseDate}
-        </li>
+        <li><strong>Category:</strong> ${this.technology.category}</li>
+        <li><strong>Release Date:</strong> ${this.technology.releaseDate}</li>
         <li>
           <strong>Latest Version:</strong> ${this.technology.latestVersion}
         </li>
         <li>
-          <strong>Developers:</strong> ${this.technology.developers.join(", ")}
+          <strong>Developers:</strong>
+          <ul>
+            ${this.technology.developers.map(
+              (developer) => html`<li>${developer}</li>`
+            )}
+          </ul>
+        </li>
+        <li><strong>License:</strong> ${this.technology.license}</li>
+        <li>
+          <strong>Platforms:</strong>
+          <ul>
+            ${this.technology.platforms.map(
+              (platform) => html`<li>${platform}</li>`
+            )}
+          </ul>
         </li>
         <li>
-          <strong>License:</strong> ${this.technology.license}
+          <strong>Features:</strong>
+          <ul>
+            ${this.technology.features.map(
+              (feature) => html`<li>${feature}</li>`
+            )}
+          </ul>
         </li>
-        <li>
-          <strong>Platforms:</strong> ${this.technology.platforms.join(", ")}
-        </li>
-        <li>
-          <strong>Features:</strong> ${this.technology.features.join(", ")}
-        </li>
-        <li>
-          <strong>Popularity:</strong> ${this.technology.popularity}
-        </li>
+        <li><strong>Popularity:</strong> ${this.technology.popularity}</li>
         <li>
           <strong>Documentation:</strong>
           <a href=${this.technology.documentation} target="_blank"
@@ -193,7 +201,7 @@ export class TechnologyForm extends LitElement {
   `;
 
   handleSubmit(event: Event) {
-    console.log(event)
+    console.log(event);
     event.preventDefault();
     const technology: Technology = {
       id: Math.random().toString(36).substr(2, 9),
@@ -209,185 +217,178 @@ export class TechnologyForm extends LitElement {
       features: this.features.split(","),
       popularity: this.popularity,
       documentation: this.documentation,
+      updatedAt: new Date().getTime(),
     };
 
     chrome.storage.sync.get("technologies", (data) => {
       const technologies: Technology[] = data.technologies || [];
       technologies.push(technology);
       chrome.storage.sync.set({ technologies });
+      generateDOM(technologies);
     });
 
     this.isOpen = false;
 
-    generateDOM()
+    
   }
 
   render() {
     return this.isOpen
       ? html`
-      <div class="form-container">
-      <h2>Add Technology</h2>
-      <form @submit=${this.handleSubmit} >
-      <div class="input-container">
-      <div class="input-item">
-        <label for="name">Name</label>
-        <input
-          id="name"
-          type="text"
-          .value=${this.name}
-          @input=${(e: InputEvent) =>
-            (this.name = (e.target as HTMLInputElement).value)}
-        />
-      
-        </div>
-        <div class="input-item">
+          <div class="form-container">
+            <h2>Add Technology</h2>
+            <form @submit=${this.handleSubmit}>
+              <div class="input-container">
+                <div class="input-item">
+                  <label for="name">Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    .value=${this.name}
+                    @input=${(e: InputEvent) =>
+                      (this.name = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="description">Description</label>
+                  <textarea
+                    id="description"
+                    .value=${this.description}
+                    @input=${(e: InputEvent) =>
+                      (this.description = (
+                        e.target as HTMLTextAreaElement
+                      ).value)}
+                  ></textarea>
+                </div>
+                <div class="input-item">
+                  <label for="url">URL</label>
+                  <input
+                    id="url"
+                    type="text"
+                    .value=${this.url}
+                    @input=${(e: InputEvent) =>
+                      (this.url = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="category">Category</label>
+                  <input
+                    id="category"
+                    type="text"
+                    .value=${this.category}
+                    @input=${(e: InputEvent) =>
+                      (this.category = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
 
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          .value=${this.description}
-          @input=${(e: InputEvent) =>
-            (this.description = (e.target as HTMLTextAreaElement).value)}
-        ></textarea>
-        </div>
-        <div class="input-item">
-        <label for="url">URL</label>
-        <input
-          id="url"
-          type="text"
-          .value=${this.url}
-          @input=${(e: InputEvent) =>
-            (this.url = (e.target as HTMLInputElement).value)}
-        />
-        </div>
-        <div class="input-item">
+                <div class="input-item">
+                  <label for="releaseDate">Release Date</label>
+                  <input
+                    id="releaseDate"
+                    type="text"
+                    .value=${this.releaseDate}
+                    @input=${(e: InputEvent) =>
+                      (this.releaseDate = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="latestVersion">Latest Version</label>
+                  <input
+                    id="latestVersion"
+                    type="text"
+                    .value=${this.latestVersion}
+                    @input=${(e: InputEvent) =>
+                      (this.latestVersion = (
+                        e.target as HTMLInputElement
+                      ).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="developers">Developers</label>
+                  <input
+                    id="developers"
+                    type="text"
+                    .value=${this.developers}
+                    @input=${(e: InputEvent) =>
+                      (this.developers = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="license">License</label>
+                  <input
+                    id="license"
+                    type="text"
+                    .value=${this.license}
+                    @input=${(e: InputEvent) =>
+                      (this.license = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
 
-        <label for="category">Category</label>
-        <input
-          id="category"
-          type="text"
-          .value=${this.category}
-          @input=${(e: InputEvent) =>
-            (this.category = (e.target as HTMLInputElement).value)}
-        />
-        
-        </div>
+                <div class="input-item">
+                  <label for="platforms">Platforms</label>
+                  <input
+                    id="platforms"
+                    type="text"
+                    .value=${this.platforms}
+                    @input=${(e: InputEvent) =>
+                      (this.platforms = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
 
-        <div class="input-item">
-        <label for="releaseDate">Release Date</label>
-        <input
-          id="releaseDate"
-          type="text"
-          .value=${this.releaseDate}
-          @input=${(e: InputEvent) =>
-            (this.releaseDate = (e.target as HTMLInputElement).value)}
-        />
-        </div>
-        <div class="input-item">
+                <div class="input-item">
+                  <label for="features">Features</label>
 
-        <label for="latestVersion">Latest Version</label>
-        <input
-          id="latestVersion"
-          type="text"
-          .value=${this.latestVersion}
-          @input=${(e: InputEvent) =>
-            (this.latestVersion = (e.target as HTMLInputElement).value)}
-        />
-        </div>
-        <div class="input-item">
+                  <input
+                    id="features"
+                    type="text"
+                    .value=${this.features}
+                    @input=${(e: InputEvent) =>
+                      (this.features = (e.target as HTMLInputElement).value)}
+                  />
+                </div>
+                <div class="input-item">
+                  <label for="popularity">Popularity</label>
+                  <input
+                    id="popularity"
+                    type="number"
+                    .value=${this.popularity as unknown as string}
+                    @input=${(e: InputEvent) =>
+                      (this.popularity = Number(
+                        (e.target as HTMLInputElement).value
+                      ))}
+                  />
+                </div>
 
-        <label for="developers">Developers</label>
-        <input
-          id="developers"
-          type="text"
-          .value=${this.developers}
-          @input=${(e: InputEvent) =>
-            (this.developers = (e.target as HTMLInputElement).value)}
-        />
+                <div class="input-item">
+                  <label for="documentation">Documentation</label>
 
-        </div>
-        <div class="input-item">
+                  <input
+                    id="documentation"
+                    type="text"
+                    .value=${this.documentation}
+                    @input=${(e: InputEvent) =>
+                      (this.documentation = (
+                        e.target as HTMLInputElement
+                      ).value)}
+                  />
+                </div>
+              </div>
+              <div class="actions">
+                <button class="submit-button" type="submit">
+                  Add Technology
+                </button>
 
-        <label for="license">License</label>
-        <input
-          id="license"
-          type="text"
-          .value=${this.license}
-          @input=${(e: InputEvent) =>
-            (this.license = (e.target as HTMLInputElement).value)}
-        />
-
-        </div>
-        
-        <div class="input-item">
-        <label for="platforms">Platforms</label>
-        <input
-          id="platforms"
-          type="text"
-          .value=${this.platforms}
-          @input=${(e: InputEvent) =>
-            (this.platforms = (e.target as HTMLInputElement).value)}
-        />
-
-        </div>
-
-
-        <div class="input-item">
-        <label for="features">Features</label>
-
-        <input
-          id="features"
-          type="text"
-          .value=${this.features}
-          @input=${(e: InputEvent) =>
-            (this.features = (e.target as HTMLInputElement).value)}
-        />
-
-        </div>
-        <div class="input-item">
-
-        <label for="popularity">Popularity</label>
-        <input
-          id="popularity"
-          type="number"
-          .value=${this.popularity as unknown as string}
-          @input=${(e: InputEvent) =>
-            (this.popularity = Number((e.target as HTMLInputElement).value))}
-
-        />
-        </div>
-            
-        <div class="input-item">
-
-        <label for="documentation">Documentation</label>
-
-        <input
-          id="documentation"
-          type="text"
-          .value=${this.documentation}
-          @input=${(e: InputEvent) =>
-            (this.documentation = (e.target as HTMLInputElement).value)}
-        />
-
-        </div>
-
-      </div>
-      <div class="actions">
-
-        <button
-            class="submit-button"
-        type="submit">Add Technology</button>
-
-        <button 
-        type="button"
-        class="cancel-button"
-        @click=${() => (this.isOpen = false)}>Cancel</button>
-
-      </div>
-
-      </form>
-    </div>
-    `
+                <button
+                  type="button"
+                  class="cancel-button"
+                  @click=${() => (this.isOpen = false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        `
       : html`
           <button @click=${() => (this.isOpen = true)}>Add Technology</button>
         `;
@@ -418,22 +419,21 @@ export class TechnologyList extends LitElement {
   }
 }
 
-const generateDOM = () => {
+const generateDOM = (technologies: Technology[]) => {
   document.body.innerHTML = "";
   const form = document.createElement("technology-form") as TechnologyForm;
   document.body.appendChild(form);
-  chrome.storage.sync.get("technologies", (data) => {
-    const technologies: Technology[] = data.technologies || [];
-    const list = document.createElement("technology-list") as TechnologyList;
-    list.technologies = technologies;
-    document.body.appendChild(list);
-  }
+  const list = document.createElement("technology-list") as TechnologyList;
+  list.technologies = technologies.sort(
+    (a, b) => b.updatedAt - a.updatedAt
   );
+  document.body.appendChild(list);
+  
 };
 
 chrome.storage.sync.get("technologies", (data) => {
   const technologies: Technology[] = data.technologies || [];
-  generateDOM(  );
+  generateDOM(technologies);
 });
 
 // setTimeout(() => location.reload(), 5000);
