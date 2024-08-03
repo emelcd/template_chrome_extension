@@ -1,33 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PopUp 🍿</title>
-</head>
-<body>
-  <style>
-    html {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 500px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PopUp 🍿</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <style>
+      html {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 500px;
+      }
+      #techs {
+        width: 350px;
+      }
+      #techs li {
+        margin: 0 5px;
+        font-size: large;
+      }
+    </style>
+    <h2>
+      <h1 class="animate__animated animate__bounce">An animated element</h1>
 
-    }
-    #techs {
-      width: 350px;
-    }
-    #techs li {
-      margin: 0 5px;
-      font-size: large;
-    }
-  </style>
-  <h2>
-    Template Chrome Extension 🖥
-  </h2>
-  <div id="root"></div>
-  <script src="popup.js"></script>
-</body>
+      Template Chrome Extension 🖥
+    </h2>
+    <div id="root"></div>
+    <script src="popup.js"></script>
+  </body>
 </html>

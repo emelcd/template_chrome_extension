@@ -7,7 +7,7 @@
   "author": "emelcd raticorps@gmail.com",
   "license": "MIT",
   "scripts": {
-    "dev": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts  --bundle   --outdir=extension --watch --minify",
+    "dev": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts  --bundle   --outdir=extension --watch ",
     "build": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts  --bundle   --outdir=extension --minify"
   },
   "devDependencies": {
@@ -16,7 +16,9 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "@lit-labs/motion": "^1.0.7",
     "@types/uuid": "^10.0.0",
+    "animate.css": "^4.1.1",
     "lit": "^3.1.4",
     "uuid": "^10.0.0"
   }
