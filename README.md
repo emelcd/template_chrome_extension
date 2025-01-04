@@ -28,4 +28,4 @@ For build:
 yarn build
 ```
 
-Exntension will be created in extension/ folder. Dev mode and load unpacked
+Old version
