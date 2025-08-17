@@ -7,8 +7,8 @@
   "author": "emelcd raticorps@gmail.com",
   "license": "MIT",
   "scripts": {
-    "dev": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts  --bundle   --outdir=extension --watch --minify",
-    "build": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts  --bundle   --outdir=extension --minify"
+    "dev": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts --bundle --outdir=extension --watch --minify && cp src/styles.css extension/",
+    "build": "esbuild popup=src/popup.ts background=src/background.ts content=src/content.ts --bundle --outdir=extension --minify && cp src/styles.css extension/"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.181",

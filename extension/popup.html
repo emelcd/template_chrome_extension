@@ -1,169 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🐍 Snake Game - Extensión Divertida</title>
-</head>
-<body>
-  <div class="header">
-    <div class="title">🐍 Snake Game</div>
-    <div class="subtitle">¡Diversión en tu extensión!</div>
-  </div>
-  
-  <div class="game-container">
-    <div class="score-board">
-      <span>Puntuación: <span id="score">0</span></span>
-      <span>Velocidad: <span id="speed">1</span></span>
-    </div>
-    
-    <div class="game-board" id="gameBoard">
-      <div class="game-over" id="gameOver">
-        <div style="font-size: 18px; margin-bottom: 10px;">🎮 ¡Game Over!</div>
-        <div>Puntuación final: <span id="finalScore">0</span></div>
-        <button class="restart-btn" onclick="restartGame()">Jugar de nuevo</button>
-      </div>
-      <div class="paused" id="paused">⏸️ PAUSADO</div>
-    </div>
-    
-    <div class="controls">
-      <div>🎮 Usa las flechas para mover</div>
-      <div>⏸️ Espacio para pausar</div>
-      <div>🍎 Come la comida roja para crecer</div>
-    </div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#667eea" />
+    <meta
+      name="description"
+      content="Gestor de Tareas - Extensión de Chrome para organizar tu día"
+    />
+    <title>📋 Gestor de Tareas</title>
 
-  <script src="popup.js"></script>
-  <style>
-    body {
-      width: 400px;
-      height: 500px;
-      margin: 0;
-      padding: 20px;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      overflow: hidden;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 5px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.9;
-    }
-    
-    .game-container {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 15px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .score-board {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      font-weight: bold;
-    }
-    
-    .game-board {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto;
-      background: rgba(0,0,0,0.3);
-      border-radius: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .snake-segment {
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      border-radius: 3px;
-      transition: all 0.1s ease;
-    }
-    
-    .snake-head {
-      background: #4ade80;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
-    }
-    
-    .snake-body {
-      background: #22c55e;
-    }
-    
-    .food {
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      background: #ef4444;
-      border-radius: 50%;
-      animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-    }
-    
-    .game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border-radius: 10px;
-      display: none;
-    }
-    
-    .restart-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    
-    .restart-btn:hover {
-      background: #2563eb;
-    }
-    
-    .controls {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    
-    .paused {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      padding: 10px 20px;
-      border-radius: 5px;
-      display: none;
-    }
-  </style>
-</body>
+    <!-- Preload del script para mejor rendimiento -->
+    <link rel="preload" href="popup.js" as="script" />
+
+    <!-- Favicon inline para la extensión -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>"
+    />
+
+    <!-- Archivo CSS externo -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Contenedor de carga inicial -->
+    <div id="loading" class="loading fade-in">Cargando Gestor de Tareas...</div>
+
+    <!-- El contenido principal se generará dinámicamente desde popup.ts -->
+    <script src="popup.js"></script>
+
+    <!-- Script para ocultar el loading cuando se cargue la app -->
+    <script>
+      // Ocultar loading cuando se cargue la aplicación
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          const loading = document.getElementById("loading");
+          if (loading) {
+            loading.style.opacity = "0";
+            loading.style.transform = "translateY(-20px)";
+            setTimeout(() => loading.remove(), 300);
+          }
+        }, 500);
+      });
+    </script>
+  </body>
 </html>

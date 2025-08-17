@@ -1,388 +1,237 @@
-// Crear el HTML del popup dinámicamente
-const createPopupHTML = () => {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        body {
-          width: 400px;
-          height: 500px;
-          margin: 0;
-          padding: 20px;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          overflow: hidden;
-        }
-        
-        .header {
-          text-align: center;
-          margin-bottom: 20px;
-        }
-        
-        .title {
-          font-size: 24px;
-          font-weight: bold;
-          margin-bottom: 5px;
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .subtitle {
-          font-size: 14px;
-          opacity: 0.9;
-        }
-        
-        .game-container {
-          background: rgba(255,255,255,0.1);
-          border-radius: 10px;
-          padding: 15px;
-          backdrop-filter: blur(10px);
-        }
-        
-        .score-board {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 15px;
-          font-weight: bold;
-        }
-        
-        .game-board {
-          width: 300px;
-          height: 300px;
-          margin: 0 auto;
-          background: rgba(0,0,0,0.3);
-          border-radius: 8px;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .snake-segment {
-          position: absolute;
-          width: 15px;
-          height: 15px;
-          border-radius: 3px;
-          transition: all 0.1s ease;
-        }
-        
-        .snake-head {
-          background: #4ade80;
-          border-radius: 50%;
-          box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
-        }
-        
-        .snake-body {
-          background: #22c55e;
-        }
-        
-        .food {
-          position: absolute;
-          width: 15px;
-          height: 15px;
-          background: #ef4444;
-          border-radius: 50%;
-          animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
-        
-        .game-over {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          text-align: center;
-          background: rgba(0,0,0,0.8);
-          padding: 20px;
-          border-radius: 10px;
-          display: none;
-        }
-        
-        .restart-btn {
-          background: #3b82f6;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-weight: bold;
-          margin-top: 10px;
-        }
-        
-        .restart-btn:hover {
-          background: #2563eb;
-        }
-        
-        .controls {
-          text-align: center;
-          margin-top: 15px;
-          font-size: 12px;
-          opacity: 0.8;
-        }
-        
-        .paused {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: rgba(0,0,0,0.8);
-          padding: 10px 20px;
-          border-radius: 5px;
-          display: none;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="title">🐍 Snake Game</div>
-        <div class="subtitle">¡Diversión en tu extensión!</div>
-      </div>
-      
-      <div class="game-container">
-        <div class="score-board">
-          <span>Puntuación: <span id="score">0</span></span>
-          <span>Velocidad: <span id="speed">1</span></span>
-        </div>
-        
-        <div class="game-board" id="gameBoard">
-          <div class="game-over" id="gameOver">
-            <div style="font-size: 18px; margin-bottom: 10px;">🎮 ¡Game Over!</div>
-            <div>Puntuación final: <span id="finalScore">0</span></div>
-            <button class="restart-btn" onclick="restartGame()">Jugar de nuevo</button>
-          </div>
-          <div class="paused" id="paused">⏸️ PAUSADO</div>
-        </div>
-        
-        <div class="controls">
-          <div>🎮 Usa las flechas para mover</div>
-          <div>⏸️ Espacio para pausar</div>
-          <div>🍎 Come la comida roja para crecer</div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+import { ListStorage } from "./background";
+import { Task, TaskPriority } from "./types";
 
-  return html;
-};
-
-// Lógica del juego
-class SnakeGame {
-  private snake: Array<{ x: number, y: number }> = [{ x: 10, y: 10 }];
-  private food: { x: number, y: number } = { x: 15, y: 15 };
-  private direction: string = 'right';
-  private gameOver: boolean = false;
-  private score: number = 0;
-  private isPaused: boolean = false;
-  private gameSpeed: number = 150;
-  private gameInterval: number | null = null;
-
-  private readonly gridSize = 20;
-  private readonly boardSize = 300;
-  private readonly cellSize = this.boardSize / this.gridSize;
+class TaskManager {
+  private storage: ListStorage<Task>;
+  private taskList!: HTMLDivElement;
+  private taskInput!: HTMLInputElement;
+  private prioritySelect!: HTMLSelectElement;
 
   constructor() {
-    this.init();
+    this.storage = new ListStorage<Task>("tasks");
+    this.initUI();
+    this.loadTasks();
   }
 
-  private init() {
-    this.setupEventListeners();
-    this.startGame();
-  }
+  private initUI(): void {
+    // Crear elementos de la interfaz
+    const container = document.createElement("div");
+    container.className = "task-container";
 
-  private setupEventListeners() {
-    document.addEventListener('keydown', (e) => {
-      switch (e.key) {
-        case 'ArrowUp':
-          if (this.direction !== 'down') this.direction = 'up';
-          break;
-        case 'ArrowDown':
-          if (this.direction !== 'up') this.direction = 'down';
-          break;
-        case 'ArrowLeft':
-          if (this.direction !== 'right') this.direction = 'left';
-          break;
-        case 'ArrowRight':
-          if (this.direction !== 'left') this.direction = 'right';
-          break;
-        case ' ':
-          this.togglePause();
-          break;
-      }
+    // Título
+    const title = document.createElement("h2");
+    title.textContent = "📋 Gestor de Tareas";
+    title.className = "task-title";
+    container.appendChild(title);
+
+    // Formulario para añadir tareas
+    const form = document.createElement("div");
+    form.className = "task-form";
+
+    this.taskInput = document.createElement("input");
+    this.taskInput.placeholder = "✍️ Nueva tarea...";
+    this.taskInput.className = "task-input";
+
+    this.prioritySelect = document.createElement("select");
+    this.prioritySelect.className = "priority-select";
+
+    Object.keys(TaskPriority).forEach((key) => {
+      const priority = TaskPriority[key as keyof typeof TaskPriority];
+      const option = document.createElement("option");
+      option.value = priority;
+      option.textContent = priority.replace("_", " ");
+      this.prioritySelect.appendChild(option);
     });
+
+    const addButton = document.createElement("button");
+    addButton.textContent = "➕ Añadir";
+    addButton.className = "add-button";
+    addButton.onclick = () => this.addTask();
+
+    form.appendChild(this.taskInput);
+    form.appendChild(this.prioritySelect);
+    form.appendChild(addButton);
+    container.appendChild(form);
+
+    // Lista de tareas
+    this.taskList = document.createElement("div");
+    this.taskList.className = "task-list";
+
+    container.appendChild(this.taskList);
+
+    // Botón para limpiar
+    const clearButton = document.createElement("button");
+    clearButton.textContent = "🗑️ Limpiar Todo";
+    clearButton.className = "clear-button";
+
+    clearButton.addEventListener("mouseenter", () => {
+      clearButton.style.transform = "translateY(-2px)";
+      clearButton.style.boxShadow = "0 6px 20px rgba(255, 107, 107, 0.6)";
+    });
+
+    clearButton.addEventListener("mouseleave", () => {
+      clearButton.style.transform = "translateY(0)";
+      clearButton.style.boxShadow = "0 4px 12px rgba(255, 107, 107, 0.4)";
+    });
+
+    clearButton.onclick = () => this.clearAllTasks();
+    container.appendChild(clearButton);
+
+    document.body.appendChild(container);
   }
 
-  private startGame() {
-    this.gameInterval = window.setInterval(() => {
-      this.moveSnake();
-    }, this.gameSpeed);
+  private async addTask(): Promise<void> {
+    const title = this.taskInput.value.trim();
+    const priority = this.prioritySelect.value as TaskPriority;
+
+    if (!title) return;
+
+    const task: Task = {
+      id: Date.now(),
+      title,
+      description: "",
+      done: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      dueDate: new Date().toISOString(),
+      priority,
+    };
+
+    await this.storage.add(task);
+    this.taskInput.value = "";
+    this.loadTasks();
   }
 
-  private moveSnake() {
-    if (this.gameOver || this.isPaused) return;
+  private async loadTasks(): Promise<void> {
+    const tasks = await this.storage.getAll();
+    this.renderTasks(tasks);
+  }
 
-    const head = { ...this.snake[0] };
+  private renderTasks(tasks: Task[]): void {
+    this.taskList.innerHTML = "";
 
-    switch (this.direction) {
-      case 'up':
-        head.y = (head.y - 1 + this.gridSize) % this.gridSize;
-        break;
-      case 'down':
-        head.y = (head.y + 1) % this.gridSize;
-        break;
-      case 'left':
-        head.x = (head.x - 1 + this.gridSize) % this.gridSize;
-        break;
-      case 'right':
-        head.x = (head.x + 1) % this.gridSize;
-        break;
-    }
-
-    // Verificar colisión con el cuerpo
-    if (this.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-      this.endGame();
+    if (tasks.length === 0) {
+      const emptyMessage = document.createElement("p");
+      emptyMessage.textContent = "✨ No hay tareas. ¡Añade una nueva!";
+      emptyMessage.style.cssText = `
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        font-style: italic;
+        font-size: 16px;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+      `;
+      this.taskList.appendChild(emptyMessage);
       return;
     }
 
-    this.snake.unshift(head);
+    tasks.forEach((task) => {
+      const taskElement = document.createElement("div");
+      taskElement.style.cssText = `
+          padding: 16px;
+          margin: 8px 0;
+          border: none;
+          border-radius: 12px;
+          background: ${
+            task.done ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.2)"
+          };
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        `;
 
-    // Verificar si come la comida
-    if (head.x === this.food.x && head.y === this.food.y) {
-      this.score += 10;
-      this.generateFood();
-      this.updateScore();
-      this.increaseSpeed();
-    } else {
-      this.snake.pop();
-    }
+      taskElement.addEventListener("mouseenter", () => {
+        taskElement.style.transform = "translateY(-2px)";
+        taskElement.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.15)";
+      });
 
-    this.render();
-  }
+      taskElement.addEventListener("mouseleave", () => {
+        taskElement.style.transform = "translateY(0)";
+        taskElement.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+      });
 
-  private generateFood() {
-    do {
-      this.food = {
-        x: Math.floor(Math.random() * this.gridSize),
-        y: Math.floor(Math.random() * this.gridSize)
-      };
-    } while (this.snake.some(segment => segment.x === this.food.x && segment.y === this.food.y));
-  }
+      const taskInfo = document.createElement("div");
+      taskInfo.style.cssText = "flex: 1;";
 
-  private render() {
-    const gameBoard = document.getElementById('gameBoard');
-    if (!gameBoard) return;
+      const title = document.createElement("div");
+      title.textContent = task.title;
+      title.style.cssText = `
+          font-weight: 600;
+          font-size: 16px;
+          text-decoration: ${task.done ? "line-through" : "none"};
+          color: ${task.done ? "rgba(255, 255, 255, 0.7)" : "white"};
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        `;
 
-    // Limpiar elementos del juego
-    const existingSegments = gameBoard.querySelectorAll('.snake-segment, .food');
-    existingSegments.forEach(el => el.remove());
+      const priority = document.createElement("small");
+      priority.textContent = `🎯 Prioridad: ${task.priority.replace("_", " ")}`;
+      priority.style.cssText = `
+          color: rgba(255, 255, 255, 0.8);
+          display: block;
+          margin-top: 6px;
+          font-size: 12px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        `;
 
-    // Renderizar serpiente
-    this.snake.forEach((segment, index) => {
-      const element = document.createElement('div');
-      element.className = `snake-segment ${index === 0 ? 'snake-head' : 'snake-body'}`;
-      element.style.left = `${segment.x * this.cellSize}px`;
-      element.style.top = `${segment.y * this.cellSize}px`;
-      gameBoard.appendChild(element);
+      taskInfo.appendChild(title);
+      taskInfo.appendChild(priority);
+
+      const actions = document.createElement("div");
+      actions.className = "task-actions";
+
+      const toggleButton = document.createElement("button");
+      toggleButton.textContent = task.done ? "↩️" : "✓";
+      toggleButton.className = `action-button toggle-button ${
+        task.done ? "completed" : ""
+      }`;
+      toggleButton.onclick = () => this.toggleTask(task);
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "🗑️";
+      deleteButton.className = "action-button delete-button";
+      deleteButton.onclick = () => this.deleteTask(task);
+
+      actions.appendChild(toggleButton);
+      actions.appendChild(deleteButton);
+
+      taskElement.appendChild(taskInfo);
+      taskElement.appendChild(actions);
+      this.taskList.appendChild(taskElement);
     });
-
-    // Renderizar comida
-    const foodElement = document.createElement('div');
-    foodElement.className = 'food';
-    foodElement.style.left = `${this.food.x * this.cellSize}px`;
-    foodElement.style.top = `${this.food.y * this.cellSize}px`;
-    gameBoard.appendChild(foodElement);
   }
 
-  private updateScore() {
-    const scoreElement = document.getElementById('score');
-    if (scoreElement) {
-      scoreElement.textContent = this.score.toString();
-    }
+  private async toggleTask(task: Task): Promise<void> {
+    const updatedTask = {
+      ...task,
+      done: !task.done,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.storage.remove((t) => t.id === task.id);
+    await this.storage.add(updatedTask);
+    this.loadTasks();
   }
 
-  private increaseSpeed() {
-    if (this.score > 0 && this.score % 50 === 0) {
-      this.gameSpeed = Math.max(50, this.gameSpeed - 10);
-      if (this.gameInterval) {
-        clearInterval(this.gameInterval);
-        this.gameInterval = window.setInterval(() => {
-          this.moveSnake();
-        }, this.gameSpeed);
-      }
-
-      const speedElement = document.getElementById('speed');
-      if (speedElement) {
-        speedElement.textContent = Math.round((150 - this.gameSpeed) / 10 + 1).toString();
-      }
-    }
+  private async deleteTask(task: Task): Promise<void> {
+    await this.storage.remove((t) => t.id === task.id);
+    this.loadTasks();
   }
 
-  private togglePause() {
-    this.isPaused = !this.isPaused;
-    const pausedElement = document.getElementById('paused');
-    if (pausedElement) {
-      pausedElement.style.display = this.isPaused ? 'block' : 'none';
-    }
-  }
-
-  private endGame() {
-    this.gameOver = true;
-    const gameOverElement = document.getElementById('gameOver');
-    const finalScoreElement = document.getElementById('finalScore');
-
-    if (gameOverElement) {
-      gameOverElement.style.display = 'block';
-    }
-
-    if (finalScoreElement) {
-      finalScoreElement.textContent = this.score.toString();
-    }
-  }
-
-  public restart() {
-    this.snake = [{ x: 10, y: 10 }];
-    this.food = { x: 15, y: 15 };
-    this.direction = 'right';
-    this.gameOver = false;
-    this.score = 0;
-    this.isPaused = false;
-    this.gameSpeed = 150;
-
-    this.generateFood();
-    this.updateScore();
-
-    const gameOverElement = document.getElementById('gameOver');
-    const pausedElement = document.getElementById('paused');
-    const speedElement = document.getElementById('speed');
-
-    if (gameOverElement) gameOverElement.style.display = 'none';
-    if (pausedElement) pausedElement.style.display = 'none';
-    if (speedElement) speedElement.textContent = '1';
-
-    if (this.gameInterval) {
-      clearInterval(this.gameInterval);
-    }
-
-    this.startGame();
-    this.render();
+  private async clearAllTasks(): Promise<void> {
+    await this.storage.clear();
+    this.loadTasks();
   }
 }
 
-// Función global para reiniciar el juego
-(window as any).restartGame = () => {
-  if ((window as any).snakeGame) {
-    (window as any).snakeGame.restart();
-  }
-};
-
-// Inicializar el juego cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-  (window as any).snakeGame = new SnakeGame();
+// Inicializar cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+  new TaskManager();
 });
-
-// Exportar el HTML para que esbuild lo procese
-export const popupHTML = createPopupHTML();
