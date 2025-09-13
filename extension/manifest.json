@@ -1,5 +1,5 @@
 {
-    "name": "Template Chrome Extension",
+    "name": "PAco",
     "description": "Template Chrome Extension build with TypeScript and esBuild",
     "version": "0.0.1",
     "manifest_version": 3,
