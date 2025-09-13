@@ -81,15 +81,6 @@ class TaskManager {
     clearButton.textContent = "🗑️ Limpiar Todo";
     clearButton.className = "clear-button";
 
-    clearButton.addEventListener("mouseenter", () => {
-      clearButton.style.transform = "translateY(-2px)";
-      clearButton.style.boxShadow = "0 6px 20px rgba(255, 107, 107, 0.6)";
-    });
-
-    clearButton.addEventListener("mouseleave", () => {
-      clearButton.style.transform = "translateY(0)";
-      clearButton.style.boxShadow = "0 4px 12px rgba(255, 107, 107, 0.4)";
-    });
 
     clearButton.onclick = () => this.clearAllTasks();
     container.appendChild(clearButton);
@@ -130,74 +121,25 @@ class TaskManager {
     if (tasks.length === 0) {
       const emptyMessage = document.createElement("p");
       emptyMessage.textContent = "✨ No hay tareas. ¡Añade una nueva!";
-      emptyMessage.style.cssText = `
-        text-align: center;
-        color: rgba(255, 255, 255, 0.8);
-        font-style: italic;
-        font-size: 16px;
-        padding: 40px 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        border: 2px dashed rgba(255, 255, 255, 0.3);
-      `;
+      emptyMessage.className = "empty-message";
       this.taskList.appendChild(emptyMessage);
       return;
     }
 
     tasks.forEach((task) => {
       const taskElement = document.createElement("div");
-      taskElement.style.cssText = `
-          padding: 16px;
-          margin: 8px 0;
-          border: none;
-          border-radius: 12px;
-          background: ${
-            task.done ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.2)"
-          };
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          transition: all 0.3s ease;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        `;
-
-      taskElement.addEventListener("mouseenter", () => {
-        taskElement.style.transform = "translateY(-2px)";
-        taskElement.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.15)";
-      });
-
-      taskElement.addEventListener("mouseleave", () => {
-        taskElement.style.transform = "translateY(0)";
-        taskElement.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
-      });
+      taskElement.className = `task-item ${task.done ? "completed" : ""}`;
 
       const taskInfo = document.createElement("div");
-      taskInfo.style.cssText = "flex: 1;";
+      taskInfo.className = "task-info";
 
       const title = document.createElement("div");
       title.textContent = task.title;
-      title.style.cssText = `
-          font-weight: 600;
-          font-size: 16px;
-          text-decoration: ${task.done ? "line-through" : "none"};
-          color: ${task.done ? "rgba(255, 255, 255, 0.7)" : "white"};
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        `;
+      title.className = `task-title-text ${task.done ? "completed" : ""}`;
 
       const priority = document.createElement("small");
       priority.textContent = `🎯 Prioridad: ${task.priority.replace("_", " ")}`;
-      priority.style.cssText = `
-          color: rgba(255, 255, 255, 0.8);
-          display: block;
-          margin-top: 6px;
-          font-size: 12px;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 4px 8px;
-          border-radius: 6px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        `;
+      priority.className = "task-priority";
 
       taskInfo.appendChild(title);
       taskInfo.appendChild(priority);
